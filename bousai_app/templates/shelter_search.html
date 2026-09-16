@@ -1,8 +1,188 @@
 {% extends "base.html" %}
 
-{% block content %}
-<h2>避難所検索</h2>
-<p>登録されている避難所を確認できます。</p>
+{% block title %}避難所検索 | 防災アプリ{% endblock %}
 
-<p><a href="/all_shelters">全施設一覧</a></p>
+{% block content %}
+<style>
+	.search-page {
+		width: min(1080px, calc(100% - 32px));
+		margin: 28px auto 64px;
+	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.search-title {
+		margin: 0 0 14px;
+		color: #26364c;
+		font-size: 1.4rem;
+		font-weight: 800;
+	}
+	.search-map {
+		position: relative;
+		height: 270px;
+		overflow: hidden;
+		border: 1px solid #cfd6df;
+		border-radius: 4px;
+		background:
+			linear-gradient(125deg, transparent 48%, rgba(115, 181, 221, .35) 49%, rgba(115, 181, 221, .35) 52%, transparent 53%),
+			linear-gradient(30deg, transparent 47%, rgba(203, 213, 223, .55) 48%, rgba(203, 213, 223, .55) 50%, transparent 51%),
+			#f5f8fa;
+	}
+	.map-label {
+		position: absolute;
+		color: #7d8995;
+		font-size: .86rem;
+	}
+	.map-label.one { top: 38px; left: 32%; }
+	.map-label.two { top: 110px; right: 17%; }
+	.map-label.three { bottom: 35px; left: 14%; }
+	.map-pin {
+		position: absolute;
+		color: #f33a22;
+		font-size: 2.6rem;
+		filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .18));
+	}
+	.map-pin small {
+		position: absolute;
+		top: 20px;
+		left: 40px;
+		width: 90px;
+		color: #687584;
+		font-family: "Noto Sans JP", sans-serif;
+		font-size: .78rem;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+	.map-pin.a { top: 38px; left: 34%; }
+	.map-pin.b { top: 92px; left: 17%; }
+	.map-pin.c { top: 52px; right: 18%; }
+	.map-pin.d { bottom: 45px; right: 13%; }
+	.map-center {
+		position: absolute;
+		top: 50%;
+		left: 51%;
+		width: 42px;
+		height: 42px;
+		transform: translate(-50%, -50%);
+		border: 1px solid #155b85;
+		border-radius: 50%;
+		background: #22a8df;
+	}
+	.search-controls {
+		display: grid;
+		grid-template-columns: 220px minmax(280px, 430px) 150px;
+		align-items: center;
+		justify-content: center;
+		gap: 14px;
+		margin: 38px auto 28px;
+	}
+	.district-select,
+	.search-button,
+	.all-shelters-link {
+		min-height: 48px;
+		border: 1px solid #b8c0ca;
+		border-radius: 3px;
+		font: inherit;
+	}
+	.district-select { padding: 0 12px; color: #333; background: #fff; }
+	.search-button {
+		color: #24415b;
+		background: #dbeaf6;
+		cursor: pointer;
+	}
+	.search-button:hover { background: #c7e0f2; }
+	.all-shelters-link {
+		display: grid;
+		place-items: center;
+		color: #667484;
+		background: #fff;
+		text-align: center;
+		text-decoration: none;
+	}
+	.all-shelters-link:hover { color: #2f61b5; border-color: #2f61b5; }
+	.search-lower {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 34px;
+		align-items: start;
+	}
+	.shelter-list {
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		border: 1px solid #222;
+		list-style: none;
+	}
+	.shelter-list a,
+	.shelter-list-empty {
+		display: block;
+		padding: 8px 14px;
+		border-bottom: 1px solid #222;
+		color: #333;
+		background: #fff;
+		text-decoration: none;
+	}
+	.shelter-list li:last-child a,
+	.shelter-list li:last-child .shelter-list-empty { border-bottom: 0; }
+	.shelter-list a:hover { color: #2459ad; background: #eef5fb; }
+	.filter-options { padding-top: 8px; color: #4d5968; }
+	.filter-options legend { margin-bottom: 12px; font-weight: 700; }
+	.filter-options label { display: inline-block; margin: 0 18px 12px 0; }
+	@media (max-width: 760px) {
+		.search-controls { grid-template-columns: 1fr; margin-top: 24px; }
+		.search-lower { grid-template-columns: 1fr; gap: 22px; }
+		.shelter-list { max-width: 300px; }
+		.search-map { height: 230px; }
+	}
+</style>
+
+<div class="search-page">
+	<h2 class="search-title">避難所検索</h2>
+
+	<section class="search-map" aria-label="避難所マップ">
+		<span class="map-label one">青森市</span>
+		<span class="map-label two">青森駅周辺</span>
+		<span class="map-label three">避難所エリア</span>
+		<span class="map-pin a"><i class="fa-solid fa-location-dot"></i><small>避難所名</small></span>
+		<span class="map-pin b"><i class="fa-solid fa-location-dot"></i><small>避難所名</small></span>
+		<span class="map-pin c"><i class="fa-solid fa-location-dot"></i><small>避難所名</small></span>
+		<span class="map-pin d"><i class="fa-solid fa-location-dot"></i><small>避難所名</small></span>
+		<span class="map-center" aria-hidden="true"></span>
+	</section>
+
+	<form class="search-controls" method="get" action="/search_results">
+		<label for="district" class="sr-only">町名を選択</label>
+		<select class="district-select" id="district" name="district">
+			<option value="">選択しない</option>
+			{% for row, row_districts in districts.items() %}
+			<optgroup label="{{ row }}">
+				{% for district, reading in row_districts %}
+				<option value="{{ district }}">{{ district }}（{{ reading }}）</option>
+				{% endfor %}
+			</optgroup>
+			{% endfor %}
+		</select>
+		<button class="search-button" type="submit">検索</button>
+		<a class="all-shelters-link" href="/all_shelters">空きのある施設だけ表示</a>
+	</form>
+
+	<div class="search-lower">
+		<fieldset class="filter-options">
+			<legend>施設の条件</legend>
+			<label><input type="checkbox" name="barrier_free"> バリアフリー対応</label>
+			<label><input type="checkbox" name="pets"> ペット可</label>
+			<label><input type="checkbox" name="infants"> 乳幼児対応</label>
+			<label><input type="checkbox" name="parking"> 駐車場あり</label>
+		</fieldset>
+	</div>
+</div>
+
 {% endblock %}
