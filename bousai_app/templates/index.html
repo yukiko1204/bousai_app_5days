@@ -1,15 +1,23 @@
 {% extends "base.html" %}
 
-{% block content %}
-<!-- 避難所マップ -->
-<h2>避難所マップ</h2>
-<div id="shelterMap" style="height: 300px;"></div>
+{% block title %}ホーム | 防災アプリ{% endblock %}
 
-<!-- 気象警報・注意報 -->
-<h2>青森市 気象警報・注意報</h2>
-<p>10分おきに自動更新されます。</p>
-<div id="weatherContent">
-  <p>読み込み中...</p>
+{% block content %}
+<div class="page-shell">
+    <section class="home-card">
+        <h2 class="section-heading"><span class="icon"><i class="fa-solid fa-location-dot"></i></span>避難所マップ</h2>
+        <div id="shelterMap"></div>
+    </section>
+
+    <section class="home-card">
+        <div class="section-heading weather-header">
+            <span><span class="icon"><i class="fa-solid fa-cloud-sun"></i></span> 青森市 気象警報・注意報</span>
+            <span class="refresh-label"><i class="fa-solid fa-arrows-rotate"></i> 10分おき自動更新</span>
+        </div>
+        <div class="weather-card" id="weatherContent">
+            <p>読み込み中...</p>
+        </div>
+    </section>
 </div>
 
 <!-- Leaflet の読み込み -->
@@ -56,14 +64,14 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             warningsHtml += '</ul>';
         } else {
-            warningsHtml = '<p>現在、警報・注意報は発表されていません</p>';
+            warningsHtml = '<p class="weather-status"><i class="fa-solid fa-circle-check"></i>現在、警報・注意報は発表されていません</p>';
         }
 
         weatherContent.innerHTML = `
-            <p>対象地域: ${data.area_name || '青森市'}</p>
+            <p><i class="fa-solid fa-location-dot"></i> ${data.area_name || '青森市'}</p>
             ${warningsHtml}
-            <p>最終確認: <span id="lastFetchTime">${data.last_fetch_time || '更新中...'}</span></p>
-            <p>気象庁最終発表: ${data.report_time || '不明'}</p>
+            <p class="weather-meta"><i class="fa-regular fa-clock"></i> データ取得: <span id="lastFetchTime">${data.last_fetch_time || '更新中...'}</span></p>
+            <p class="weather-meta"><i class="fa-solid fa-satellite-dish"></i> 気象庁発表: ${data.report_time || '不明'}</p>
         `;
     }
 
