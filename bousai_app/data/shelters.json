@@ -1,18 +1,26 @@
 [
   {
     "id": 1,
-    "name": "御所見小学校"
+    "name": "御所見小学校",
+    "latitude": 40.8244,
+    "longitude": 140.7406
   },
   {
     "id": 2,
-    "name": "片瀬小学校"
+    "name": "片瀬小学校",
+    "latitude": 40.8178,
+    "longitude": 140.7471
   },
   {
     "id": 5,
-    "name": "鵠洋小学校"
+    "name": "鵠洋小学校",
+    "latitude": 40.8296,
+    "longitude": 140.7518
   },
   {
     "id": 6,
-    "name": "あああ"
+    "name": "あああ",
+    "latitude": 40.8119,
+    "longitude": 140.7348
   }
 ]
